@@ -69,4 +69,4 @@ jobs:
         run: |
           echo "Deploiement effectue avec succes sur l'environnement officiel."
           echo "Sous-environnement selectionne manuellement : ${{
-          github.event.inputs.target_sub_env }}"
+          github.event.inputs.target_sub_env }}" 
