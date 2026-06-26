@@ -3,9 +3,7 @@ const path = require('path');
 const { execFile } = require('child_process'); // Utilisé pour introduire une faille SAST
 const net = require('net');
 
-const SIMULATED_AWS_KEY = "AKIAIOSFODNN7TRUEMEB";
-const INTERNAL_TOKEN = "mycorp_secrtok784512963014abcd";
-const TEMP_STAGE_CHECK = "mycorp_ABCDEFGHIJKLMNOPQRSTUVWX";
+const SIMULATED_AWS_KEY = process.env.SIMULATED_AWS_KEY;
 
 const app = express();
 

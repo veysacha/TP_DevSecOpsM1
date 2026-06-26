@@ -1,0 +1,8 @@
+creation_rules:
+  - path_regex: ^secrets-dev\.yaml$
+    age:
+      - age166yrdpcs7jg9j74lc49dvtq7s8jar8adjtjdyk200pqr546upcesjtkt2l
+      - age1llnrawthdc927d8r4cfn02ngfmw882a0mndgnp9kyl2rqgwp3cysau8fn2
+  - path_regex: ^secrets-prod\.yaml$
+    age:
+      - age1llnrawthdc927d8r4cfn02ngfmw882a0mndgnp9kyl2rqgwp3cysau8fn2
