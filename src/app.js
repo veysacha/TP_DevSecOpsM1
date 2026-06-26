@@ -4,6 +4,8 @@ const { execFile } = require('child_process'); // Utilisé pour introduire une f
 const net = require('net');
 
 const SIMULATED_AWS_KEY = "AKIAIOSFODNN7TRUEMEB";
+const INTERNAL_TOKEN = "mycorp_secrtok784512963014abcd";
+const MOCK_HIGH_ENTROPY_PASSWORD_HASH= "7bX9rM2qW5zP8kL1vN4jT3gF6dC9sA2eH5bV8nK1mJ4";
 
 const app = express();
 

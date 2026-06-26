@@ -1,0 +1,3 @@
+[[rules]]
+id = "corporate-api-token"
+regex = '''(?i)mycorp_[A-Za-z0-9]{24}'''
