@@ -5,6 +5,7 @@ const net = require('net');
 
 const SIMULATED_AWS_KEY = "AKIAIOSFODNN7TRUEMEB";
 const INTERNAL_TOKEN = "mycorp_secrtok784512963014abcd";
+const TEMP_STAGE_CHECK = "mycorp_secrtok784512963014abcd";
 
 const app = express();
 
