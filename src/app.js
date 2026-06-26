@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
-const { exec } = require('child_process'); // Utilisé pour introduire une faille SAST
+const { execFile } = require('child_process'); // Utilisé pour introduire une faille SAST
+const net = require('net');
 
 const SIMULATED_AWS_KEY = "AKIAIOSFODNN7EXAMPLE";
 
@@ -15,8 +16,14 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/debug-ping', (req, res) => {
   const targetIp = req.query.ip || '127.0.0.1';
+  const isValidIp = net.isIP(targetIp) !== 0;
+  const isValidHostname = /^[a-zA-Z0-9.-]+$/.test(targetIp);
 
-  exec(`ping -c 1 ${targetIp}`, (error, stdout, stderr) => {
+  if (!isValidIp && !isValidHostname) {
+    return res.status(400).json({ error: 'Invalid IP or hostname' });
+  }
+
+  execFile('ping', ['-c', '1', targetIp], (error, stdout, stderr) => {
     if (error) {
       return res.status(500).json({ error: error.message });
     }
