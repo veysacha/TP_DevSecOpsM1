@@ -1,0 +1,72 @@
+name: "Application Pipeline"
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      target_sub_env:
+        description: 'Environnement cible secondaire'
+        required: true
+        default: 'sandbox'
+  schedule:
+    - cron: '0 0 * * *'
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read # Permet de cloner le code source
+  checks: write # Permet d'écrire le rapport JUnit
+  security-events: write # Permet d'envoyer les alertes CodeQL à l'onglet Security
+  actions: read # Permet à CodeQL de lire les métadonnées du run
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: "Clonage du depot"
+        uses: actions/checkout@v5
+
+      - name: "Configuration du Cache npm"
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
+      - name: "Installation propre des dependances"
+        run: |
+          echo "::group::Installation des modules Node.js"
+          npm ci
+          echo "::endgroup::"
+
+      - name: "Initialisation de CodeQL Analysis"
+        uses: github/codeql-action/init@v4
+        with:
+          languages: 'javascript'
+
+      - name: "Execution de la suite de tests"
+        run: npm test
+
+      - name: "Execution de CodeQL Analysis"
+        uses: github/codeql-action/analyze@v4
+
+      - name: "Publication du Rapport de Tests"
+        uses: mikepenz/action-junit-report@v6
+        if: always()
+        with:
+          report_paths: '**/junit.xml'
+
+  deploy-production:
+    needs: build-and-test
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Simulation de Deploiement Securise"
+        run: |
+          echo "Deploiement effectue avec succes sur l'environnement officiel."
+          echo "Sous-environnement selectionne manuellement : ${{
+          github.event.inputs.target_sub_env }}"
