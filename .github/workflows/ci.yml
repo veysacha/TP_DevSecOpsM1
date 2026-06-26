@@ -65,8 +65,54 @@ jobs:
     environment: production
     runs-on: ubuntu-latest
     steps:
-      - name: "Simulation de Deploiement Securise"
+      - name: "Clonage du depot"
+        uses: actions/checkout@v5
+
+      - name: "Installation des outils de chiffrement"
         run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y age curl
+          sudo curl -fsSL -o /usr/local/bin/sops https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.linux.amd64
+          sudo chmod +x /usr/local/bin/sops
+          age-keygen --version
+          sops --version
+
+      - name: "Installation propre des dependances"
+        run: npm ci
+
+      - name: "Dechiffrement a la volee de la configuration de production"
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s' "$SOPS_AGE_KEY" > "$RUNNER_TEMP/ops.txt"
+          SOPS_AGE_KEY_FILE="$RUNNER_TEMP/ops.txt" sops -d --output-type json secrets-prod.yaml > "$RUNNER_TEMP/secrets-prod.json"
+          node - <<'NODE'
+          const fs = require('fs');
+          const secretPath = `${process.env.RUNNER_TEMP}/secrets-prod.json`;
+          const secret = JSON.parse(fs.readFileSync(secretPath, 'utf8'));
+          const envFile = process.env.GITHUB_ENV;
+          fs.appendFileSync(envFile, `SIMULATED_AWS_KEY=${secret.SIMULATED_AWS_KEY}\n`);
+          NODE
+          rm -f "$RUNNER_TEMP/ops.txt" "$RUNNER_TEMP/secrets-prod.json"
+
+      - name: "Demarrage hermetique et validation"
+        run: |
+          set -euo pipefail
+          npm start > "$RUNNER_TEMP/app.log" 2>&1 &
+          app_pid=$!
+          trap 'kill "$app_pid" >/dev/null 2>&1 || true' EXIT
+
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/api/health >/dev/null; then
+              echo "Validation de l'application reussie."
+              break
+            fi
+            sleep 1
+          done
+
+          curl -fsS http://127.0.0.1:3000/api/health >/dev/null
           echo "Deploiement effectue avec succes sur l'environnement officiel."
-          echo "Sous-environnement selectionne manuellement : ${{
-          github.event.inputs.target_sub_env }}" 
+          echo "Sous-environnement selectionne manuellement : ${{ github.event.inputs.target_sub_env }}"

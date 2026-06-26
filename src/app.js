@@ -4,6 +4,7 @@ const { execFile } = require('child_process'); // Utilisé pour introduire une f
 const net = require('net');
 
 const SIMULATED_AWS_KEY = process.env.SIMULATED_AWS_KEY;
+const INTERNAL_TOKEN = process.env.INTERNAL_TOKEN;
 
 const app = express();
 
