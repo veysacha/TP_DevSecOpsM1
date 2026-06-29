@@ -8,8 +8,6 @@ on:
         description: 'Environnement cible secondaire'
         required: true
         default: 'sandbox'
-  schedule:
-    - cron: '0 0 * * *'
 
 concurrency:
   group: ${{ github.ref }}
